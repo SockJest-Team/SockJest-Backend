@@ -1,11 +1,37 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [NotificationsModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get('DB_USERNAME'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_DATABASE'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false, // NUNCA true en producción
+        ssl: config.get('DB_SSL') === 'true'
+          ? { rejectUnauthorized: false } // Supabase usa certificados propios
+          : false,
+        extra: {
+          max: 10,               // máximo de conexiones en el pool
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+        },
+        retryAttempts: 5,        // reintenta si Supabase no responde al iniciar
+        retryDelay: 3000,
+        autoLoadEntities: true,
+      }),
+    }),
+  ],
 })
 export class AppModule {}
