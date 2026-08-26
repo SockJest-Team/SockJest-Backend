@@ -1,6 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CategoriasModule } from './modules/categorias/categorias.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { SubastasModule } from './modules/subastas/subastas.module';
+import { SesionesModule } from './modules/sesiones/sesiones.module';
+import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.module';
+import { UserRolesService } from './common/user-roles.service';
 
 @Module({
   imports: [
@@ -32,6 +40,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         autoLoadEntities: true,
       }),
     }),
+    CategoriasModule,
+    RolesModule,
+    UsuariosModule,
+    AuthModule,
+    SubastasModule,
+    SesionesModule,
+    ReservasAccesoModule,
   ],
+  providers: [UserRolesService],
 })
 export class AppModule {}
