@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 import { Subastas } from "./Subastas";
 import { Usuarios } from "./Usuarios";
+import { Relation } from "typeorm";
 
 @Index("notificaciones_pkey", ["idNotificacion"], { unique: true })
 @Index("idx_notificaciones_usuario", ["idUsuario", "leido"], {})
@@ -43,11 +44,11 @@ export class Notificaciones {
 
   @ManyToOne(() => Subastas, (subastas) => subastas.notificaciones)
   @JoinColumn([{ name: "id_subasta", referencedColumnName: "idSubasta" }])
-  idSubasta: Subastas;
+  idSubasta: Relation<Subastas>;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.notificaciones, {
     onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
-  idUsuario2: Usuarios;
+  idUsuario2: Relation<Usuarios>;
 }

@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
 import { Subastas } from "./Subastas";
 import { Usuarios } from "./Usuarios";
@@ -50,9 +51,9 @@ export class Pujas {
 
   @ManyToOne(() => Subastas, (subastas) => subastas.pujas)
   @JoinColumn([{ name: "id_subasta", referencedColumnName: "idSubasta" }])
-  idSubasta2: Subastas;
+  idSubasta2: Relation<Subastas>;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.pujas)
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
-  idUsuario2: Usuarios;
+  idUsuario2: Relation<Usuarios>;
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, Index, OneToMany, Relation, } from "typeorm";
 import { Calificaciones } from "./Calificaciones";
 import { Notificaciones } from "./Notificaciones";
 import { Pagos } from "./Pagos";
@@ -52,31 +52,31 @@ export class Usuarios {
     () => Calificaciones,
     (calificaciones) => calificaciones.idComprador
   )
-  calificaciones: Calificaciones[];
+  calificaciones: Relation<Calificaciones>[];
 
   @OneToMany(
     () => Calificaciones,
     (calificaciones) => calificaciones.idSubastador2
   )
-  calificaciones2: Calificaciones[];
+  calificaciones2: Relation<Calificaciones>[];
 
   @OneToMany(
     () => Notificaciones,
     (notificaciones) => notificaciones.idUsuario2
   )
-  notificaciones: Notificaciones[];
+  notificaciones: Relation<Notificaciones>[];
 
   @OneToMany(() => Pagos, (pagos) => pagos.idComprador)
-  pagos: Pagos[];
+  pagos: Relation<Pagos>[];
 
   @OneToMany(() => Pujas, (pujas) => pujas.idUsuario2)
-  pujas: Pujas[];
+  pujas: Relation<Pujas>[];
 
   @OneToMany(
     () => ReservasAcceso,
     (reservasAcceso) => reservasAcceso.idComprador2
   )
-  reservasAccesos: ReservasAcceso[];
+  reservasAccesos: Relation<ReservasAcceso>[];
 
   @OneToMany(() => Sesiones, (sesiones) => sesiones.idUsuario2)
   sesiones: Sesiones[];
@@ -85,16 +85,16 @@ export class Usuarios {
     () => SubastaHistorialEstados,
     (subastaHistorialEstados) => subastaHistorialEstados.idUsuarioResponsable
   )
-  subastaHistorialEstados: SubastaHistorialEstados[];
+  subastaHistorialEstados: Relation<SubastaHistorialEstados>[];
 
   @OneToMany(() => Subastas, (subastas) => subastas.idAdminAprobador)
-  subastas: Subastas[];
+  subastas: Relation<Subastas>[];
 
   @OneToMany(() => Subastas, (subastas) => subastas.idGanador)
-  subastas2: Subastas[];
+  subastas2: Relation<Subastas>[];
 
   @OneToMany(() => Subastas, (subastas) => subastas.idSubastador)
-  subastas3: Subastas[];
+  subastas3: Relation<Subastas>[];
 
   @OneToMany(() => UsuarioRoles, (usuarioRoles) => usuarioRoles.idUsuario2)
   usuarioRoles: UsuarioRoles[];

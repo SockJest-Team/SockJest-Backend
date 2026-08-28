@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { passportJwtSecret } from 'jwks-rsa';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -9,16 +10,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get('SUPABASE_JWT_SECRET') as string,
+      algorithms: ['ES256'], // tu CURRENT KEY es ECC (P-256)
+      secretOrKeyProvider: passportJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: `${config.get('SUPABASE_URL')}/auth/v1/.well-known/jwks.json`,
+      }),
     });
   }
 
   async validate(payload: any) {
-    // Esto es lo que llega en el token de Supabase
     return {
-      userId: payload.sub,          // id del usuario en auth.users
+      userId: payload.sub,
       email: payload.email,
-      role: payload.user_metadata?.role || payload.app_metadata?.role,
+      // sin "role" — el rol real se consulta en RolesGuard vía UserRolesService
     };
   }
 }

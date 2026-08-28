@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
 import { Usuarios } from "./Usuarios";
 import { Subastas } from "./Subastas";
@@ -45,9 +46,9 @@ export class Pagos {
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.pagos)
   @JoinColumn([{ name: "id_comprador", referencedColumnName: "idUsuario" }])
-  idComprador: Usuarios;
+  idComprador: Relation<Usuarios>;
 
   @OneToOne(() => Subastas, (subastas) => subastas.pagos)
   @JoinColumn([{ name: "id_subasta", referencedColumnName: "idSubasta" }])
-  idSubasta2: Subastas;
+  idSubasta2: Relation<Subastas>;
 }

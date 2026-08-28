@@ -22,7 +22,8 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "strictPropertyInitialization": false
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
 }

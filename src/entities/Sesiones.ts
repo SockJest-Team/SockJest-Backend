@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
 import { Usuarios } from "./Usuarios";
 
@@ -37,5 +38,5 @@ export class Sesiones {
     onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
-  idUsuario2: Usuarios;
+  idUsuario2: Relation<Usuarios>;
 }

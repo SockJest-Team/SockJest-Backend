@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
 import { Subastas } from "./Subastas";
 
@@ -43,11 +44,11 @@ export class Categorias {
   @JoinColumn([
     { name: "id_categoria_padre", referencedColumnName: "idCategoria" },
   ])
-  idCategoriaPadre2: Categorias;
+  idCategoriaPadre2: Relation<Categorias>;
 
   @OneToMany(() => Categorias, (categorias) => categorias.idCategoriaPadre2)
-  categorias: Categorias[];
+  categorias: Relation<Categorias>[];
 
   @OneToMany(() => Subastas, (subastas) => subastas.idCategoria2)
-  subastas: Subastas[];
+  subastas: Relation<Subastas>[];
 }

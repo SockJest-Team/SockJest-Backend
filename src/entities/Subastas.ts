@@ -16,6 +16,7 @@ import { ReservasAcceso } from "./ReservasAcceso";
 import { SubastaHistorialEstados } from "./SubastaHistorialEstados";
 import { Usuarios } from "./Usuarios";
 import { Categorias } from "./Categorias";
+import { Relation } from "typeorm";
 
 @Index("idx_subastas_estado_categoria", ["estado", "idCategoria"], {})
 @Index("idx_subastas_fecha_inicio", ["fechaInicio"], {})
@@ -83,44 +84,44 @@ export class Subastas {
   fechaCreacion: Date;
 
   @OneToOne(() => Calificaciones, (calificaciones) => calificaciones.idSubasta2)
-  calificaciones: Calificaciones;
+  calificaciones: Relation<Calificaciones>;
 
   @OneToMany(() => Notificaciones, (notificaciones) => notificaciones.idSubasta)
-  notificaciones: Notificaciones[];
+  notificaciones: Relation<Notificaciones>[];
 
   @OneToOne(() => Pagos, (pagos) => pagos.idSubasta2)
-  pagos: Pagos;
+  pagos: Relation<Pagos>;
 
   @OneToMany(() => Pujas, (pujas) => pujas.idSubasta2)
-  pujas: Pujas[];
+  pujas: Relation<Pujas>[];
 
   @OneToMany(
     () => ReservasAcceso,
     (reservasAcceso) => reservasAcceso.idSubasta2
   )
-  reservasAccesos: ReservasAcceso[];
+  reservasAccesos: Relation<ReservasAcceso>[];
 
   @OneToMany(
     () => SubastaHistorialEstados,
     (subastaHistorialEstados) => subastaHistorialEstados.idSubasta
   )
-  subastaHistorialEstados: SubastaHistorialEstados[];
+  subastaHistorialEstados: Relation<SubastaHistorialEstados>[];
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.subastas)
   @JoinColumn([
     { name: "id_admin_aprobador", referencedColumnName: "idUsuario" },
   ])
-  idAdminAprobador: Usuarios;
+  idAdminAprobador: Relation<Usuarios>;
 
   @ManyToOne(() => Categorias, (categorias) => categorias.subastas)
   @JoinColumn([{ name: "id_categoria", referencedColumnName: "idCategoria" }])
-  idCategoria2: Categorias;
+  idCategoria2: Relation<Categorias>;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.subastas2)
   @JoinColumn([{ name: "id_ganador", referencedColumnName: "idUsuario" }])
-  idGanador: Usuarios;
+  idGanador: Relation<Usuarios>;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.subastas3)
   @JoinColumn([{ name: "id_subastador", referencedColumnName: "idUsuario" }])
-  idSubastador: Usuarios;
+  idSubastador: Relation<Usuarios>;
 }

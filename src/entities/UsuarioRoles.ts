@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, Relation, } from "typeorm";
 import { Roles } from "./Roles";
 import { Usuarios } from "./Usuarios";
 
@@ -25,5 +25,5 @@ export class UsuarioRoles {
     onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
-  idUsuario2: Usuarios;
+  idUsuario2: Relation<Usuarios>;
 }

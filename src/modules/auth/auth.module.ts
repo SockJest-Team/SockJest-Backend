@@ -6,9 +6,10 @@ import { SupabaseProvider } from '../../config/supabase.provider';
 import { Usuarios } from '../../entities/Usuarios';
 import { Roles } from '../../entities/Roles';
 import { UsuarioRoles } from '../../entities/UsuarioRoles';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Usuarios, Roles, UsuarioRoles])],
+  imports: [TypeOrmModule.forFeature([Usuarios, Roles, UsuarioRoles]), CommonModule],
   controllers: [AuthController],
   providers: [AuthService, SupabaseProvider],
 })
