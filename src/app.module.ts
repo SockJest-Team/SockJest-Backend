@@ -10,6 +10,7 @@ import { SesionesModule } from './modules/sesiones/sesiones.module';
 import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.module';
 import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
+import { AuctionModule } from './modules/auction/auction.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { EntitiesModule } from './entities/entities.module';
     SesionesModule,
     ReservasAccesoModule,
     CommonModule,
+    AuctionModule,
   ],
 })
 export class AppModule {}

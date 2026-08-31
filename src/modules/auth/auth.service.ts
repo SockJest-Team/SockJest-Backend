@@ -1,4 +1,4 @@
-import { Injectable, Inject, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -6,6 +6,9 @@ import { RegisterDto } from './dto/register.dto';
 import { Usuarios } from '../../entities/Usuarios';
 import { Roles } from '../../entities/Roles';
 import { UsuarioRoles } from '../../entities/UsuarioRoles';
+import { Sesiones } from '../../entities/Sesiones';
+import { LoginDto } from './dto/login.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +17,7 @@ export class AuthService {
     @InjectRepository(Usuarios) private readonly usuariosRepo: Repository<Usuarios>,
     @InjectRepository(Roles) private readonly rolesRepo: Repository<Roles>,
     @InjectRepository(UsuarioRoles) private readonly usuarioRolesRepo: Repository<UsuarioRoles>,
+    @InjectRepository(Sesiones) private readonly sesionesRepo: Repository<Sesiones>,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -69,4 +73,35 @@ export class AuthService {
       throw new InternalServerErrorException('Error al completar el registro');
     }
   }
+
+  async login(dto: LoginDto, req: Request){
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email: dto.correo,
+      password: dto.contraseña,
+    });
+
+    if (error) {
+      throw new UnauthorizedException('Correo o contraseña incorrectos');
+    }
+
+    const idUsuario = data.user.id;
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress;
+    const dispositivo = req.headers['user-agent'] || 'Desconocido';
+
+    const nuevaSesion = this.sesionesRepo.create({
+      idUsuario,
+      ipAddress: ip,
+      dispositivo,
+      activa: true,
+    })
+    await this.sesionesRepo.save(nuevaSesion);
+
+    await this.usuariosRepo.update({ idUsuario }, {ultimaIp: ip, ultimoDispositivo: dispositivo});
+    
+    return{
+      access_token: data.session.access_token,
+      userId: idUsuario, 
+    }
+  }
+
 }
