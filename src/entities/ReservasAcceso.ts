@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from "typeorm";
 import { Usuarios } from "./Usuarios";
 import { Subastas } from "./Subastas";
@@ -47,11 +48,11 @@ export class ReservasAcceso {
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.reservasAccesos)
   @JoinColumn([{ name: "id_comprador", referencedColumnName: "idUsuario" }])
-  idComprador2: Usuarios;
+  idComprador2: Relation<Usuarios>;
 
   @ManyToOne(() => Subastas, (subastas) => subastas.reservasAccesos, {
     onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "id_subasta", referencedColumnName: "idSubasta" }])
-  idSubasta2: Subastas;
+  idSubasta2: Relation<Subastas>;
 }

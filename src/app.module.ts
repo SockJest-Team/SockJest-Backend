@@ -8,7 +8,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SubastasModule } from './modules/subastas/subastas.module';
 import { SesionesModule } from './modules/sesiones/sesiones.module';
 import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.module';
-import { UserRolesService } from './common/user-roles.service';
+import { CommonModule } from './common/common.module';
+import { EntitiesModule } from './entities/entities.module';
+import { AuctionModule } from './modules/auction/auction.module';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { UserRolesService } from './common/user-roles.service';
         autoLoadEntities: true,
       }),
     }),
+    EntitiesModule,
     CategoriasModule,
     RolesModule,
     UsuariosModule,
@@ -47,7 +50,8 @@ import { UserRolesService } from './common/user-roles.service';
     SubastasModule,
     SesionesModule,
     ReservasAccesoModule,
+    CommonModule,
+    AuctionModule,
   ],
-  providers: [UserRolesService],
 })
 export class AppModule {}

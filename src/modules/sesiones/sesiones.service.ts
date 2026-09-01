@@ -20,4 +20,16 @@ export class SesionesService {
   async cerrarSesion(idSesion: string) {
     return this.repo.update({ idSesion }, { activa: false });
   }
+
+  async validarSesion(idUsuario: string, ip: string, dispositivo: string): Promise<boolean>{
+    const sesion = await this.repo.findOne({
+      where: {idUsuario, activa: true},
+      order: { fechaInicio: 'DESC'},
+    });
+
+    if(!sesion) return false;
+
+    return sesion.ipAddress === ip && sesion.dispositivo === dispositivo;
+  }
+
 }
