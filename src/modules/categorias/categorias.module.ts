@@ -7,7 +7,7 @@ import { Subastas } from '../../entities/Subastas';
 import { CommonModule } from '../../common/common.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Categorias, Subastas]), CommonModule],
+  imports: [TypeOrmModule.forFeature([Categorias, Subastas]), CommonModule],
   controllers: [CategoriasController],
   providers: [CategoriasService],
 })

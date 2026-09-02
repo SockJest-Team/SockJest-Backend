@@ -11,7 +11,7 @@ import { ValidationPipe } from '@nestjs/common';
 
   async connectToRedis() {
     const pubClient = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379'
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
     });
     const subClient = pubClient.duplicate();
     await Promise.all([pubClient.connect(), subClient.connect()]);
@@ -23,18 +23,23 @@ import { ValidationPipe } from '@nestjs/common';
     server.adapter(this.adapterContructor);
     return server;
   }
-
 }*/
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   app.useGlobalPipes(new ValidationPipe());
 
   /*const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);*/
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 4001);
+  
 }
 bootstrap();

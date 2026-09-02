@@ -14,6 +14,10 @@ import { AuctionModule } from './modules/auction/auction.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { BidsModule } from './modules/bids/bids.module';
+import { CalificacionesModule } from './modules/calificaciones/calificaciones.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { PagosModule } from './modules/pagos/pagos.module';
+import { PujasModule } from './modules/pujas/pujas.module';
 
 @Module({
   imports: [
@@ -32,15 +36,16 @@ import { BidsModule } from './modules/bids/bids.module';
         database: config.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false, // NUNCA true en producción
-        ssl: config.get('DB_SSL') === 'true'
-          ? { rejectUnauthorized: false } // Supabase usa certificados propios
-          : false,
+        ssl:
+          config.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false } // Supabase usa certificados propios
+            : false,
         extra: {
-          max: 10,               // máximo de conexiones en el pool
+          max: 10, // máximo de conexiones en el pool
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 5000,
         },
-        retryAttempts: 5,        // reintenta si Supabase no responde al iniciar
+        retryAttempts: 5, // reintenta si Supabase no responde al iniciar
         retryDelay: 3000,
         autoLoadEntities: true,
       }),
@@ -58,6 +63,10 @@ import { BidsModule } from './modules/bids/bids.module';
     SchedulerModule,
     ScheduleModule.forRoot(),
     BidsModule,
+    CalificacionesModule,
+    NotificationsModule,
+    PujasModule,
+    PagosModule,
   ],
 })
 export class AppModule {}
