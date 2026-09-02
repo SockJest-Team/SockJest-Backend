@@ -11,6 +11,10 @@ import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.
 import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
 import { AuctionModule } from './modules/auction/auction.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CalificacionesModule } from './modules/calificaciones/calificaciones.module';
+import { PagosModule } from './modules/pagos/pagos.module';
+import { PujasModule } from './modules/pujas/pujas.module';
 
 @Module({
   imports: [
@@ -29,15 +33,16 @@ import { AuctionModule } from './modules/auction/auction.module';
         database: config.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false, // NUNCA true en producción
-        ssl: config.get('DB_SSL') === 'true'
-          ? { rejectUnauthorized: false } // Supabase usa certificados propios
-          : false,
+        ssl:
+          config.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false } // Supabase usa certificados propios
+            : false,
         extra: {
-          max: 10,               // máximo de conexiones en el pool
+          max: 10, // máximo de conexiones en el pool
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 5000,
         },
-        retryAttempts: 5,        // reintenta si Supabase no responde al iniciar
+        retryAttempts: 5, // reintenta si Supabase no responde al iniciar
         retryDelay: 3000,
         autoLoadEntities: true,
       }),
@@ -52,6 +57,10 @@ import { AuctionModule } from './modules/auction/auction.module';
     ReservasAccesoModule,
     CommonModule,
     AuctionModule,
+    CalificacionesModule,
+    NotificationsModule,
+    PujasModule,
+    PagosModule,
   ],
 })
 export class AppModule {}
