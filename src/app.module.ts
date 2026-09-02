@@ -11,6 +11,9 @@ import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.
 import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
 import { AuctionModule } from './modules/auction/auction.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { BidsModule } from './modules/bids/bids.module';
 
 @Module({
   imports: [
@@ -52,6 +55,9 @@ import { AuctionModule } from './modules/auction/auction.module';
     ReservasAccesoModule,
     CommonModule,
     AuctionModule,
+    SchedulerModule,
+    ScheduleModule.forRoot(),
+    BidsModule,
   ],
 })
 export class AppModule {}
