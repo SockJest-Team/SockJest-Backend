@@ -3,8 +3,10 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
-class RedisIoAdapter extends IoAdapter {
+
+/* class RedisIoAdapter extends IoAdapter {
   private adapterContructor: ReturnType<typeof createAdapter>;
 
   async connectToRedis() {
@@ -21,7 +23,7 @@ class RedisIoAdapter extends IoAdapter {
     server.adapter(this.adapterContructor);
     return server;
   }
-}
+}*/
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,9 +34,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const redisIoAdapter = new RedisIoAdapter(app);
+  app.useGlobalPipes(new ValidationPipe());
+
+  /*const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+  app.useWebSocketAdapter(redisIoAdapter);*/
   await app.listen(process.env.PORT ?? 4001);
+  
 }
 bootstrap();

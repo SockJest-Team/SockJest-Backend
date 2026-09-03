@@ -8,6 +8,7 @@ import {
   Body,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { SubastasService } from './subastas.service';
 import { CreateSubastaDto } from './dto/create-subasta.dto';
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
+import { FiltroSubastasDto } from './dto/filtro-subastas.dto';
 
 @Controller('subastas')
 export class SubastasController {
@@ -48,11 +50,7 @@ export class SubastasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Subastador', 'Usuario')
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateSubastaDto,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  update( @Param('id') id: string, @Body() dto: UpdateSubastaDto, @Req() req: AuthenticatedRequest,) {
     return this.subastasService.update(id, dto, req.user.userId);
   }
 

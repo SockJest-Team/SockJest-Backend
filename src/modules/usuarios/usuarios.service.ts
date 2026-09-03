@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from '../../entities/Usuarios';
@@ -14,12 +10,10 @@ import { ChangeRoleDto } from './dto/change-role.dto';
 @Injectable()
 export class UsuariosService {
   constructor(
-    @InjectRepository(Usuarios)
-    private readonly usuariosRepo: Repository<Usuarios>,
-    @InjectRepository(UsuarioRoles)
-    private readonly usuariosRolesRepo: Repository<UsuarioRoles>,
+    @InjectRepository(Usuarios) private readonly usuariosRepo: Repository<Usuarios>,
+    @InjectRepository(UsuarioRoles) private readonly usuariosRolesRepo: Repository<UsuarioRoles>,
     @InjectRepository(Roles) private readonly rolesRepo: Repository<Roles>,
-  ) {}
+  ) { }
 
   findAll() {
     return this.usuariosRepo.find();
