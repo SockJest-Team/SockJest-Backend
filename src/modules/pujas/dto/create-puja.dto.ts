@@ -1,10 +1,13 @@
-import { IsNumber, IsPositive, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreatePujaDto {
   @IsString()
-  idSubasta: string;
+  @IsNotEmpty()
+  readonly idSubasta!: string;
 
-  @IsNumber()
-  @IsPositive()
-  monto: number;
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(1)
+  readonly monto!: number;
 }

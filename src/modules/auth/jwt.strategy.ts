@@ -10,7 +10,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      algorithms: ['ES256'], // tu CURRENT KEY es ECC (P-256)
+      algorithms: ['ES256'],
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
         rateLimit: true,
@@ -24,7 +24,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       email: payload.email,
-      // sin "role" — el rol real se consulta en RolesGuard vía UserRolesService
     };
   }
 }

@@ -5,16 +5,16 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserRolesService {
-    constructor(
-        @InjectRepository(UsuarioRoles)
-        private readonly repo: Repository<UsuarioRoles>,
-    ){}
+  constructor(
+    @InjectRepository(UsuarioRoles)
+    private readonly repo: Repository<UsuarioRoles>,
+  ) {}
 
-    async getRolesByUsuario(idUsuario: string): Promise<string[]>{
-        const registros = await this.repo.find({
-            where: { idUsuario},
-            relations: ['idRol2'], //trae relación hacia roles
-        });
-        return registros.map((r) => r.idRol2.nombreRol);
-    }
+  async getRolesByUsuario(idUsuario: string): Promise<string[]> {
+    const registros = await this.repo.find({
+      where: { idUsuario },
+      relations: ['idRol2'],
+    });
+    return registros.map((r) => r.idRol2.nombreRol);
+  }
 }

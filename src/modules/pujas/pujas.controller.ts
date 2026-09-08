@@ -7,33 +7,40 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { PujasService } from './pujas.service';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Request } from 'express';
 import { CreatePujaDto } from './dto/create-puja.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt.auth.guard';
 import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
-import { AntiCheatGuard } from '../../common/guards/anti-cheat.guard';
+import { PujasService, SnapshotSubasta } from './pujas.service';
 
 @Controller('pujas')
 export class PujasController {
-  constructor(private readonly service: PujasService) {}
+  constructor(private readonly pujasService: PujasService) {}
+
+  @Get('snapshot/:subastaId')
+  @UseGuards(OptionalJwtAuthGuard)
+  getSnapshot(
+    @Param('subastaId') subastaId: string,
+    @Req() req: Request,
+  ): Promise<SnapshotSubasta> {
+    const requesterId = (req as { user?: { userId?: string } }).user?.userId;
+    return this.pujasService.getSnapshot(subastaId, requesterId);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async registrar(
-    @Body() dto: CreatePujaDto,
-    @Req() req: AuthenticatedRequest & Request,
-  ) {
+  registrar(@Body() dto: CreatePujaDto, @Req() req: AuthenticatedRequest) {
     const ip =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
       req.socket.remoteAddress ||
-      '';
-    const dispositivo = req.headers['user-agent'] || 'Desconocido';
-    return this.service.registrarPuja(dto, req.user.userId, ip, dispositivo);
-  }
+      '0.0.0.0';
+    const dispositivo = (req.headers['user-agent'] as string) || 'Desconocido';
 
-  @UseGuards(JwtAuthGuard, AntiCheatGuard)
-  @Get('subasta/:idSubasta')
-  historial(@Param('idSubasta') idSubasta: string) {
-    return this.service.findAllBySubasta(idSubasta);
+    return this.pujasService.registrarPuja(
+      { subastaId: dto.idSubasta, monto: dto.monto },
+      { userId: req.user.userId, email: req.user.email },
+      { ip, dispositivo },
+    );
   }
 }

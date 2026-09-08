@@ -42,7 +42,7 @@ export class AntiCheatService {
     } else if (hasDevice && !hasIp) {
       scorePenalty += 5;
     } else if (!hasDevice && hasIp) {
-      scorePenalty *= this.WEIGHTS.DEVICE_CHANGE;
+      scorePenalty += this.WEIGHTS.DEVICE_CHANGE;
     }
 
     const now = Date.now();

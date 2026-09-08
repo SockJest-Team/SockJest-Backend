@@ -8,7 +8,9 @@ import { Roles } from '../../entities/Roles';
 import { Calificaciones } from '../../entities/Calificaciones';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Usuarios, Calificaciones, UsuarioRoles, Roles])],
+  imports: [
+    TypeOrmModule.forFeature([Usuarios, Calificaciones, UsuarioRoles, Roles]),
+  ],
   controllers: [UsuariosController],
   providers: [UsuariosService],
 })

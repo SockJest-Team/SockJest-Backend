@@ -6,53 +6,53 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   Relation,
-} from "typeorm";
-import { Usuarios } from "./Usuarios";
-import { Subastas } from "./Subastas";
+} from 'typeorm';
+import { Usuarios } from './Usuarios';
+import { Subastas } from './Subastas';
 
 @Index(
-  "reservas_acceso_id_subasta_id_comprador_key",
-  ["idComprador", "idSubasta"],
-  { unique: true }
+  'reservas_acceso_id_subasta_id_comprador_key',
+  ['idComprador', 'idSubasta'],
+  { unique: true },
 )
-@Index("reservas_acceso_pkey", ["idReserva"], { unique: true })
-@Entity("reservas_acceso", { schema: "public" })
+@Index('reservas_acceso_pkey', ['idReserva'], { unique: true })
+@Entity('reservas_acceso', { schema: 'public' })
 export class ReservasAcceso {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id_reserva" })
+  @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_reserva' })
   idReserva: string;
 
-  @Column("bigint", { name: "id_subasta", unique: true })
+  @Column('bigint', { name: 'id_subasta' })
   idSubasta: string;
 
-  @Column("uuid", { name: "id_comprador", unique: true })
+  @Column('uuid', { name: 'id_comprador' })
   idComprador: string;
 
-  @Column("character varying", {
-    name: "estado",
+  @Column('character varying', {
+    name: 'estado',
     length: 15,
     default: () => "'Pendiente'",
   })
   estado: string;
 
-  @Column("timestamp with time zone", {
-    name: "fecha_solicitud",
-    default: () => "now()",
+  @Column('timestamp with time zone', {
+    name: 'fecha_solicitud',
+    default: () => 'now()',
   })
   fechaSolicitud: Date;
 
-  @Column("timestamp with time zone", {
-    name: "fecha_respuesta",
+  @Column('timestamp with time zone', {
+    name: 'fecha_respuesta',
     nullable: true,
   })
   fechaRespuesta: Date | null;
 
   @ManyToOne(() => Usuarios, (usuarios) => usuarios.reservasAccesos)
-  @JoinColumn([{ name: "id_comprador", referencedColumnName: "idUsuario" }])
+  @JoinColumn([{ name: 'id_comprador', referencedColumnName: 'idUsuario' }])
   idComprador2: Relation<Usuarios>;
 
   @ManyToOne(() => Subastas, (subastas) => subastas.reservasAccesos, {
-    onDelete: "CASCADE",
+    onDelete: 'CASCADE',
   })
-  @JoinColumn([{ name: "id_subasta", referencedColumnName: "idSubasta" }])
+  @JoinColumn([{ name: 'id_subasta', referencedColumnName: 'idSubasta' }])
   idSubasta2: Relation<Subastas>;
 }

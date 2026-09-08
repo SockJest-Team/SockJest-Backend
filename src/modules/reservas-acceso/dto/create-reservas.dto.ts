@@ -1,9 +1,9 @@
-import { IsString, IsNumberString } from "class-validator";
+import { IsString, IsNumberString } from 'class-validator';
 
 export class CreateReservasDto {
-    @IsNumberString()
-    idSubasta: string;
+  @IsNumberString()
+  idSubasta: string;
 
-    @IsString()
-    idComprador: string;
+  @IsString()
+  idComprador: string;
 }

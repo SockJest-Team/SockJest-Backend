@@ -8,8 +8,9 @@ import { UpdateReservasDto } from './dto/update-reservas.dto';
 @Injectable()
 export class ReservasAccesoService {
   constructor(
-    @InjectRepository(ReservasAcceso) private readonly repo: Repository<ReservasAcceso>,
-  ){}
+    @InjectRepository(ReservasAcceso)
+    private readonly repo: Repository<ReservasAcceso>,
+  ) {}
 
   async create(dto: CreateReservasDto) {
     const existe = await this.repo.findOneBy({
@@ -24,18 +25,17 @@ export class ReservasAccesoService {
   }
 
   findAllBySubasta(idSubasta: string) {
-    return this.repo.find({ where: {idSubasta}});
+    return this.repo.find({ where: { idSubasta } });
   }
 
   findOne(idReserva: string) {
-    return this.repo.findOneBy({ idReserva});
+    return this.repo.findOneBy({ idReserva });
   }
 
-  async responder(idReserva: string, dto: UpdateReservasDto){
+  async responder(idReserva: string, dto: UpdateReservasDto) {
     return this.repo.update(
-      {idReserva},
-      { estado: dto.estado, fechaRespuesta: new Date()},
+      { idReserva },
+      { estado: dto.estado, fechaRespuesta: new Date() },
     );
   }
-
 }

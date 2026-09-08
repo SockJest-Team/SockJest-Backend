@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CalificacionesService } from './calificaciones.service';
-import { CalificacionesController } from './calificaciones.controller';
 import { Calificaciones } from '../../entities/Calificaciones';
 import { Subastas } from '../../entities/Subastas';
+import { CalificacionesController } from './calificaciones.controller';
+import { CalificacionesService } from './calificaciones.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Calificaciones, Subastas])],

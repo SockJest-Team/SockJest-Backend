@@ -12,6 +12,7 @@ import { Pagos } from './Pagos';
 import { Pujas } from './Pujas';
 import { ReservasAcceso } from './ReservasAcceso';
 import { Sesiones } from './Sesiones';
+import { SubastaImagenes } from './SubastaImagenes';
 // agrega cualquier otra entidad que tengas en la carpeta
 
 const ENTITIES = [
@@ -21,6 +22,7 @@ const ENTITIES = [
   UsuarioRoles,
   Categorias,
   Subastas,
+  SubastaImagenes,
   Calificaciones,
   Notificaciones,
   SubastaHistorialEstados,

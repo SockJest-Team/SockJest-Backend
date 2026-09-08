@@ -1,15 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PujasService } from './pujas.service';
-import { PujasController } from './pujas.controller';
 import { Pujas } from '../../entities/Pujas';
 import { Subastas } from '../../entities/Subastas';
-import { NotificationsModule } from '../notifications/notifications.module';
-import { AntiCheatService } from '../../common/anti-cheat/anti-cheat.service';
+import { ReservasAcceso } from '../../entities/ReservasAcceso';
+import { CommonModule } from '../../common/common.module';
+import { PujasController } from './pujas.controller';
+import { PujasService } from './pujas.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pujas, Subastas]), NotificationsModule],
+  imports: [
+    TypeOrmModule.forFeature([Pujas, Subastas, ReservasAcceso]),
+    CommonModule,
+  ],
   controllers: [PujasController],
-  providers: [PujasService, AntiCheatService],
+  providers: [PujasService],
+  exports: [PujasService],
 })
 export class PujasModule {}

@@ -1,40 +1,42 @@
 import { NestFactory } from '@nestjs/core';
-import { IoAdapter } from '@nestjs/platform-socket.io';
-import { createClient } from 'redis';
-import { createAdapter } from '@socket.io/redis-adapter';
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ErrorCodes } from './common/constants/error-codes';
 
-class RedisIoAdapter extends IoAdapter {
-  private adapterContructor: ReturnType<typeof createAdapter>;
-
-  async connectToRedis() {
-    const pubClient = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-    });
-    const subClient = pubClient.duplicate();
-    await Promise.all([pubClient.connect(), subClient.connect()]);
-    this.adapterContructor = createAdapter(pubClient, subClient);
-  }
-
-  createIOServer(port: number, options?: any) {
-    const server = super.createIOServer(port, options);
-    server.adapter(this.adapterContructor);
-    return server;
-  }
-}
-
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
+  app.setGlobalPrefix('api');
   app.enableCors({
-    origin: 'http://localhost:3000',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: process.env.FRONTEND_URL?.split(',') ?? true,
     credentials: true,
   });
 
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
-  await app.listen(process.env.PORT ?? 4001);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (errores) => {
+        const detalles = errores
+          .map((e) => Object.values(e.constraints ?? {}))
+          .flat()
+          .join('. ');
+        return new BadRequestException({
+          code: ErrorCodes.DATOS_INVALIDOS,
+          message: `Revisa los datos del formulario: ${detalles}`,
+        });
+      },
+    }),
+  );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  const puerto = process.env.PORT ?? 4000;
+  await app.listen(puerto);
+  logger.log(`API corriendo en http://localhost:${puerto}/api`);
 }
+
 bootstrap();

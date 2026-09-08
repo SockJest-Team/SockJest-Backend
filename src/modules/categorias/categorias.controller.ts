@@ -20,7 +20,7 @@ export class CategoriasController {
   constructor(private readonly categoriasService: CategoriasService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Administrador') //Solo admin puede crear
+  @Roles('Admin')
   @Post()
   create(@Body() dto: CreateCategoriaDto) {
     return this.categoriasService.create(dto);
@@ -37,14 +37,14 @@ export class CategoriasController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Administrador')
+  @Roles('Admin')
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateCategoriaDto) {
     return this.categoriasService.update(id, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Administrador')
+  @Roles('Admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoriasService.remove(id);
