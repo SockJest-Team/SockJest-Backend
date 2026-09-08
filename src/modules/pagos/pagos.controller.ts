@@ -1,30 +1,40 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
-  Patch,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { PagosService } from './pagos.service';
+import { ProcesarPagoDto } from './dto/procesar-pago.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
-import { CrearPagoDto } from './dto/crear-pago.dto';
 
 @Controller('pagos')
 export class PagosController {
-  constructor(private readonly service: PagosService) {}
+  constructor(private readonly pagosService: PagosService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post()
-  iniciar(@Body() dto: CrearPagoDto, @Req() req: AuthenticatedRequest) {
-    return this.service.iniciarPago(dto, req.user.userId);
+  @Get('mios')
+  findMisPagos(@Req() req: AuthenticatedRequest) {
+    return this.pagosService.findMisPagos(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id/confirmar')
-  confirmar(@Param('id') id: string, @Body('referencia') referencia: string) {
-    return this.service.confirmarPago(id, referencia);
+  @Get(':id')
+  findPago(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.pagosService.findPago(id, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/procesar')
+  procesarPago(
+    @Param('id') id: string,
+    @Body() dto: ProcesarPagoDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.pagosService.procesarPago(id, req.user.userId, dto);
   }
 }

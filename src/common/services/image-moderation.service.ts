@@ -1,49 +1,82 @@
-import {
-  Injectable,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import * as sightengine from 'sightengine';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { apiError } from '../utils/api-error';
+import { ErrorCodes } from '../constants/error-codes';
 
-interface SightengineResponse {
-  status: string;
-  nudity?: { safe: number };
-  violence?: { order: number };
+interface RespuestaSightengine {
+  status: 'success' | 'failure';
+  nudity?: { safe?: number };
+  scam?: { probability?: number };
+  weapon?: number;
+  gore?: { prob?: number };
 }
+
+const UMBRAL_SEGURIDAD_NUDEZ = 0.8;
+const UMBRAL_RECHAZO = 0.5;
+const TIMEOUT_MS = 10_000;
 
 @Injectable()
 export class ImageModerationService {
-  private readonly se: any;
+  private readonly logger = new Logger(ImageModerationService.name);
+
+  private readonly apiUser: string;
+  private readonly apiSecret: string;
 
   constructor() {
-    this.se = sightengine('1684637011', '3xaaK9ZjCCFJzWH4QpQu92hLkDEE3EGU');
+    this.apiUser = process.env.SIGHTENGINE_USER ?? '';
+    this.apiSecret = process.env.SIGHTENGINE_SECRET ?? '';
+
+    if (!this.apiUser || !this.apiSecret) {
+      throw new Error(
+        'Faltan SIGHTENGINE_USER / SIGHTENGINE_SECRET en el .env',
+      );
+    }
   }
 
   async checkImage(imageUrl: string): Promise<void> {
+    const url = new URL('https://api.sightengine.com/1.0/check.json');
+    url.searchParams.set('models', 'nudity,scam,weapon,gore');
+    url.searchParams.set('api_user', this.apiUser);
+    url.searchParams.set('api_secret', this.apiSecret);
+    url.searchParams.set('url', imageUrl);
+
+    let respuesta: RespuestaSightengine;
     try {
-      const data: SightengineResponse = await this.se
-        .check(['nudity', 'violence', 'scam'])
-        .set_url(imageUrl);
+      const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+      respuesta = (await res.json()) as RespuestaSightengine;
+    } catch (e) {
+      this.logger.error(`Sightengine inaccesible (${imageUrl}): ${String(e)}`);
+      throw apiError(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        ErrorCodes.MODERACION_NO_DISPONIBLE,
+        'El verificador de imágenes no está disponible. Intenta en unos minutos.',
+      );
+    }
 
-      if (data.status === 'failure') {
-        throw new BadRequestException('Error al procesar la imagen.');
-      }
+    if (respuesta.status === 'failure') {
+      this.logger.warn(`Sightengine no pudo procesar: ${imageUrl}`);
+      throw apiError(
+        HttpStatus.BAD_REQUEST,
+        ErrorCodes.IMAGEN_NO_MODERABLE,
+        'No pudimos analizar la imagen. Revisa el enlace e intenta de nuevo.',
+      );
+    }
 
-      const isUnsafeNudity = data.nudity && data.nudity.safe < 0.8;
-      const isViolent = data.violence && (data.violence as any) > 0.5;
+    const nudezSegura = respuesta.nudity?.safe ?? 1;
+    const probScam = respuesta.scam?.probability ?? 0;
+    const arma = respuesta.weapon ?? 0;
+    const gore = respuesta.gore?.prob ?? 0;
 
-      if (isUnsafeNudity || isViolent) {
-        throw new BadRequestException(
-          'La imagen contiene contenido no permitido (+18, violencia o fraude).',
-        );
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
+    const rechazada =
+      nudezSegura < UMBRAL_SEGURIDAD_NUDEZ ||
+      probScam > UMBRAL_RECHAZO ||
+      arma > UMBRAL_RECHAZO ||
+      gore > UMBRAL_RECHAZO;
 
-      throw new InternalServerErrorException(
-        'Error de conexión con el servicio de moderación.',
+    if (rechazada) {
+      throw apiError(
+        HttpStatus.BAD_REQUEST,
+        ErrorCodes.IMAGEN_MODERACION_RECHAZADA,
+        'La imagen fue rechazada por contenido no permitido (nudidad, violencia o posible fraude).',
       );
     }
   }

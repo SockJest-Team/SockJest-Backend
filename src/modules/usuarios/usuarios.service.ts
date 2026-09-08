@@ -28,12 +28,11 @@ export class UsuariosService {
   }
 
   async update(idUsuario: string, dto: UpdateUsuarioDto) {
-    await this.findOne(idUsuario); //Valida la existencia de este usuario
+    await this.findOne(idUsuario);
     await this.usuariosRepo.update({ idUsuario }, dto);
     return this.findOne(idUsuario);
   }
 
-  //cambio de rol
   async changeRole(idUsuario: string, dto: ChangeRoleDto) {
     await this.findOne(idUsuario);
 

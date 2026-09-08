@@ -1,48 +1,75 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsDateString,
-  IsInt,
+  IsNotEmpty,
   IsNumber,
-  IsNumberString,
   IsOptional,
-  IsPositive,
-  isPositive,
   IsString,
+  IsUrl,
+  Length,
+  Max,
+  Min,
+  IsInt,
 } from 'class-validator';
+import { MAX_IMAGENES_POR_SUBASTA } from '../constants/subasta.constants';
 
 export class CreateSubastaDto {
-  @IsNumberString()
-  idCategoria: string;
-
   @IsString()
-  titulo: string;
+  @Length(5, 150)
+  readonly titulo!: string;
 
   @IsOptional()
   @IsString()
-  descripcion?: string;
+  @Length(0, 2000)
+  readonly descripcion?: string;
 
   @IsString()
-  politicaEnvio: string;
+  @Length(10, 2000)
+  readonly politicaEnvio!: string;
 
-  @IsNumber()
-  @IsPositive()
-  precioBase: number;
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(1)
+  readonly precioBase!: number;
 
   @IsOptional()
-  @IsNumber()
-  incrementoMinimoPct?: number;
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(1)
+  @Max(100)
+  readonly incrementoMinimoPct?: number;
 
   @IsOptional()
   @IsBoolean()
-  requiereReserva?: boolean;
+  readonly requiereReserva?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  readonly esPrivada?: boolean;
+
+  @IsDateString()
+  readonly fechaInicio!: string;
+
+  @IsDateString()
+  readonly fechaFin!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly idCategoria!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_IMAGENES_POR_SUBASTA)
+  @IsUrl({}, { each: true })
+  readonly imagenes?: string[];
+
+  @IsOptional()
+  @Type(() => Number)
   @IsInt()
-  limiteUsuariosConcurrentes?: number;
-
-  @IsDateString()
-  fechaInicio: string;
-
-  @IsDateString()
-  fechaFin: string;
+  @Min(2, { message: 'El límite mínimo es 2 usuarios' })
+  @Max(1000, { message: 'El límite máximo es 1000 usuarios' })
+  readonly limiteUsuariosConcurrentes?: number;
 }

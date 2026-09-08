@@ -1,7 +1,14 @@
-import { IsInt, IsString, Max, Min, IsUUID } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateCalificacionDto {
-  @IsUUID()
+  @IsString()
   idSubasta: string;
 
   @IsInt()
@@ -9,6 +16,8 @@ export class CreateCalificacionDto {
   @Max(5)
   puntuacion: number;
 
+  @IsOptional()
   @IsString()
-  comentario: string;
+  @MaxLength(500)
+  comentario?: string;
 }

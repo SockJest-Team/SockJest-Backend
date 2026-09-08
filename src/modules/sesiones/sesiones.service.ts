@@ -10,7 +10,10 @@ export class SesionesService {
   ) {}
 
   findAllByUsuario(idUsuario: string) {
-    return this.repo.find({ where: { idUsuario }, order: { fechaInicio: 'DESC' } });
+    return this.repo.find({
+      where: { idUsuario },
+      order: { fechaInicio: 'DESC' },
+    });
   }
 
   findOne(idSesion: string) {
@@ -21,15 +24,18 @@ export class SesionesService {
     return this.repo.update({ idSesion }, { activa: false });
   }
 
-  async validarSesion(idUsuario: string, ip: string, dispositivo: string): Promise<boolean>{
+  async validarSesion(
+    idUsuario: string,
+    ip: string,
+    dispositivo: string,
+  ): Promise<boolean> {
     const sesion = await this.repo.findOne({
-      where: {idUsuario, activa: true},
-      order: { fechaInicio: 'DESC'},
+      where: { idUsuario, activa: true },
+      order: { fechaInicio: 'DESC' },
     });
 
-    if(!sesion) return false;
+    if (!sesion) return false;
 
     return sesion.ipAddress === ip && sesion.dispositivo === dispositivo;
   }
-
 }

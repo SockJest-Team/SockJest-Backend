@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
+import { EmailModule } from './modules/email/email.module';
 import { CategoriasModule } from './modules/categorias/categorias.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
@@ -18,12 +20,21 @@ import { CalificacionesModule } from './modules/calificaciones/calificaciones.mo
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PagosModule } from './modules/pagos/pagos.module';
 import { PujasModule } from './modules/pujas/pujas.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { SupabaseModule } from './config/supabase.module';
+import { HistorialModule } from './modules/historial/historial.module';
+import { VendedoresModule } from './modules/vendedores/vendedores.module';
+import { ReservasGestionModule } from './modules/reservas-gestion/reservas.module';
+import { BandejaModule } from './modules/bandeja/bandeja.module';
+import { ReportesModule } from './modules/reportes/reportes.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
+    EmailModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -33,12 +44,12 @@ import { PujasModule } from './modules/pujas/pujas.module';
         port: config.get<number>('DB_PORT'),
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
-        database: config.get('DB_DATABASE'),
+        database: config.get<string>('DB_NAME') || 'postgres',
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false, // NUNCA true en producción
+        synchronize: false,
         ssl:
           config.get('DB_SSL') === 'true'
-            ? { rejectUnauthorized: false } // Supabase usa certificados propios
+            ? { rejectUnauthorized: false }
             : false,
         extra: {
           max: 10, // máximo de conexiones en el pool
@@ -67,6 +78,13 @@ import { PujasModule } from './modules/pujas/pujas.module';
     NotificationsModule,
     PujasModule,
     PagosModule,
+    SchedulerModule,
+    SupabaseModule,
+    HistorialModule,
+    VendedoresModule,
+    ReservasGestionModule,
+    BandejaModule,
+    ReportesModule,
   ],
 })
 export class AppModule {}

@@ -1,7 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateSubastaDto } from './create-subasta.dto';
 
-// No se permite cambiar el estado desde aquí
-export class UpdateSubastaDto extends PartialType(
-  OmitType(CreateSubastaDto, [] as const),
-) {}
+export class UpdateSubastaDto extends PartialType(CreateSubastaDto) {}
