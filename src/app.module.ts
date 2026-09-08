@@ -13,8 +13,11 @@ import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.
 import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
 import { AuctionModule } from './modules/auction/auction.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { BidsModule } from './modules/bids/bids.module';
 import { CalificacionesModule } from './modules/calificaciones/calificaciones.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PagosModule } from './modules/pagos/pagos.module';
 import { PujasModule } from './modules/pujas/pujas.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -68,6 +71,9 @@ import { ReportesModule } from './modules/reportes/reportes.module';
     ReservasAccesoModule,
     CommonModule,
     AuctionModule,
+    SchedulerModule,
+    ScheduleModule.forRoot(),
+    BidsModule,
     CalificacionesModule,
     NotificationsModule,
     PujasModule,
