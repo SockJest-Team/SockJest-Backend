@@ -1,80 +1,70 @@
-# =========================
-# DEPENDENCIAS
-# =========================
-node_modules/
-.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# =========================
-# COMPILACIÓN Y PRODUCCIÓN
-# =========================
-# Next.js (Frontend)
-.next/
-out/
-build/
-next-env.d.ts
+# ##############################################################################
+# NestJS & Build Outputs
+# ##############################################################################
+/dist
+/build
 *.tsbuildinfo
 
-# NestJS (Backend)
-dist/
-.dist/
+# ##############################################################################
+# Dependencies
+# ##############################################################################
+/node_modules
+/jspm_packages
 
-# =========================
-# VARIABLES DE ENTORNO
-# =========================
+# ##############################################################################
+# Environment & Sensitive Files (NEVER commit these)
+# ##############################################################################
 .env
-.env.*
+.env.accounts
+.env.development
+.env.test
+.env.production
+.env.local
+*.env
+*.pem
+*.key
 
-# =========================
-# LOGS Y DIAGNÓSTICOS
-# =========================
-logs/
+# ##############################################################################
+# Logs and Debugging
+# ##############################################################################
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pids/
-*.pid
-*.seed
-*.pid.lock
 
-# =========================
-# TESTING
-# =========================
-coverage/
-.nyc_output/
+# ##############################################################################
+# Testing and Coverage
+# ##############################################################################
+/coverage
+/.nyc_output
+*.e2e-spec.ts.log
 
-# =========================
-# SISTEMA OPERATIVO Y SERVICIOS
-# =========================
+# ##############################################################################
+# OS & System Files
+# ##############################################################################
 .DS_Store
-.temp/
-.tmp/
-*.pem
-.vercel/
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
 
-# =========================
-# EDITORES E IDEs
-# =========================
-.idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# VSCode
+# ##############################################################################
+# IDEs and Code Editors
+# ##############################################################################
+# VS Code
 .vscode/*
+!.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
+
+# IntelliJ / WebStorm
+.idea/
+
+# Sublime Text / Vim
+*.sublime-workspace
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
