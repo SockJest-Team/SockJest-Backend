@@ -161,6 +161,10 @@ export class AuthService {
       );
     }
 
+    if (!data.user) {
+      throw new Error('Usuario no autenticado tras el login de Supabase');
+    }
+
     return {
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ScheduleModule } from '@nestjs/schedule';
 import { EmailModule } from './modules/email/email.module';
 import { CategoriasModule } from './modules/categorias/categorias.module';
 import { RolesModule } from './modules/roles/roles.module';
@@ -14,7 +13,6 @@ import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
 import { AuctionModule } from './modules/auction/auction.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { BidsModule } from './modules/bids/bids.module';
 import { CalificacionesModule } from './modules/calificaciones/calificaciones.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';

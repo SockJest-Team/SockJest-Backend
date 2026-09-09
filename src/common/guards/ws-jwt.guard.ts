@@ -141,11 +141,16 @@ export class WsJwtGuard implements CanActivate {
 
             return reject(new WsException('Token inválido o expirado'));
           }
+          const verificado = decoded as JwtPayloadSupabase | undefined;
+          if (!verificado?.sub || !verificado?.email) {
+            this.logger.error('❌ [WS-AUTH] FALLA: PAYLOAD_INCOMPLETO');
+            return reject(new WsException('Token inválido o expirado'));
+          }
 
           this.logger.log(
-            `✅ [WS-AUTH] Token VERIFICADO: ${decoded.sub} (${decoded.email})`,
+            `✅ [WS-AUTH] Token VERIFICADO: ${verificado.sub} (${verificado.email})`,
           );
-          resolve(decoded as JwtPayloadSupabase);
+          resolve(verificado);
         },
       );
     });
