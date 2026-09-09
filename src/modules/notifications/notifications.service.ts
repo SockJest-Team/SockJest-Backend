@@ -12,7 +12,7 @@ export class NotificationsService {
 
   async findAllByUser(idUsuario: string) {
     return this.repo.find({
-      where: { idUsuario: { idUsuario } as Notificaciones['idUsuario2'] },
+      where: { idUsuario },
       relations: ['idSubasta'],
       order: { fechaEnvio: 'DESC' },
     });
