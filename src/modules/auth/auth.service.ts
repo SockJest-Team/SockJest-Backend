@@ -20,6 +20,7 @@ import { Sesiones } from '../../entities/Sesiones';
 import { UserRolesService } from '../../common/user-roles.service';
 import { apiError } from '../../common/utils/api-error';
 import { ErrorCodes } from '../../common/constants/error-codes';
+import { limpiarIp } from '../../common/utils/ip.util';
 
 @Injectable()
 export class AuthService {
@@ -123,9 +124,10 @@ export class AuthService {
     }
 
     const idUsuario = data.user.id;
-    const ip =
+    const ip = limpiarIp(
       (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
-      req.socket.remoteAddress;
+        req.socket.remoteAddress,
+    );
     const dispositivo = req.headers['user-agent'] || 'Desconocido';
 
     const nuevaSesion = this.sesionesRepo.create({
@@ -162,7 +164,11 @@ export class AuthService {
     }
 
     if (!data.user) {
-      throw new Error('Usuario no autenticado tras el login de Supabase');
+      throw apiError(
+        HttpStatus.UNAUTHORIZED,
+        ErrorCodes.CREDENCIALES_INVALIDAS,
+        'No se pudo renovar la sesión. Inicia sesión nuevamente.',
+      );
     }
 
     return {
