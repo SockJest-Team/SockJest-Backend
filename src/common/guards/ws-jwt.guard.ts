@@ -10,6 +10,7 @@ import JwksClient from 'jwks-rsa';
 import { Socket } from 'socket.io';
 import { UserRolesService } from '../user-roles.service';
 import { SesionesService } from '../../modules/sesiones/sesiones.service';
+import { limpiarIp } from '../utils/ip.util';
 
 export interface JwtPayloadSupabase {
   sub: string;
@@ -162,12 +163,13 @@ export class WsJwtGuard implements CanActivate {
       throw new WsException('Token inválido o expirado');
     }
 
-    const ipActual =
+    const ipActual = limpiarIp(
       (
         wsClient.handshake.headers['x-forwarded-for'] as string | undefined
       )?.split(',')[0] ??
-      wsClient.handshake.address ??
-      '';
+        wsClient.handshake.address ??
+        '',
+    );
     const dispositivoActual =
       (wsClient.handshake.headers['user-agent'] as string | undefined) ??
       'Desconocido';
