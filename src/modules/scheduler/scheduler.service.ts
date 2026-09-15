@@ -36,6 +36,15 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async gestionarEstadosSubastas(): Promise<void> {
+    if (process.env.SCHEDULER_ENABLED === 'false') return;
+
+    if (
+      process.env.SCHEDULER_MODE !== 'cron' &&
+      process.env.REDIS_URL /* || REDIS_HOST */
+    ) {
+      return;
+    }
+
     await this.protegido('abrirSubastas', () =>
       this.abrirSubastasProgramadas(),
     );
@@ -61,7 +70,7 @@ export class SchedulerService {
     }
   }
 
-  private async abrirSubastasProgramadas(): Promise<void> {
+  async abrirSubastasProgramadas(): Promise<void> {
     const ahora = new Date();
 
     const subastasParaAbrir = await this.subastasRepo.find({
@@ -101,7 +110,7 @@ export class SchedulerService {
     }
   }
 
-  private async cerrarSubastasVencidas(): Promise<void> {
+  async cerrarSubastasVencidas(): Promise<void> {
     const ahora = new Date();
 
     const subastasParaCerrar = await this.subastasRepo.find({
@@ -259,7 +268,7 @@ export class SchedulerService {
     }
   }
 
-  private async gestionarPagosVencidos(): Promise<void> {
+  async gestionarPagosVencidos(): Promise<void> {
     const ahora = new Date();
     const vencidos = await this.pagosRepo.find({
       where: { estado: 'Pendiente' },
