@@ -38,6 +38,34 @@ export class ImagenesService {
       );
     }
 
+    try {
+      const hostname = new URL(url).hostname;
+
+      const esLocal =
+        /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|169\.254\.)/.test(
+          hostname,
+        ) ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+        hostname === '[::1]' ||
+        hostname.endsWith('.internal') ||
+        hostname.endsWith('.local');
+
+      if (esLocal) {
+        throw apiError(
+          HttpStatus.BAD_REQUEST,
+          ErrorCodes.IMAGEN_NO_ACCESIBLE,
+          'No se permiten enlaces internos o locales.',
+        );
+      }
+    } catch (e) {
+      if (e instanceof HttpException) throw e;
+      throw apiError(
+        HttpStatus.BAD_REQUEST,
+        ErrorCodes.IMAGEN_INVALIDA,
+        'El enlace no es una URL válida.',
+      );
+    }
+
     let respuesta: Response;
     try {
       respuesta = await fetch(url, {
