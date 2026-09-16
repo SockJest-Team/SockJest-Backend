@@ -1,0 +1,23 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  
+  workflow_dispatch:          
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping a Render
+        run: |
+          echo "⏰ $(date -u) — despertando Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://livebid-api.onrender.com/api)
+          echo "Respuesta: HTTP $STATUS"
+          # 200 = vivo ✅ (cualquier respuesta despertó el servidor)
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "✅ Render despierto y respondiendo"
+          else
+            echo "⚠️ Render respondió $STATUS (se despertará en reintento)"
+            exit 1
+          fi
