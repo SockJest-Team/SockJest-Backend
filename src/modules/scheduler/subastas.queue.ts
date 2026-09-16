@@ -11,7 +11,7 @@ import { SchedulerService } from './scheduler.service';
 import { REDIS_CLIENT } from '../../config/redis.provider';
 
 const NOMBRE_COLA = 'subastas';
-const INTERVALO_MS = 10_000;
+const INTERVALO_MS = 5_000;
 
 @Injectable()
 export class SubastasQueue implements OnModuleInit, OnModuleDestroy {

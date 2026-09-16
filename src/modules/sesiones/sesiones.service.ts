@@ -26,16 +26,27 @@ export class SesionesService {
 
   async validarSesion(
     idUsuario: string,
-    ip: string,
-    dispositivo: string,
+    ipActual: string,
+    dispositivoActual: string,
   ): Promise<boolean> {
-    const sesion = await this.repo.findOne({
+    const sesiones = await this.repo.find({
       where: { idUsuario, activa: true },
       order: { fechaInicio: 'DESC' },
+      take: 10,
     });
 
-    if (!sesion) return false;
+    if (sesiones.length === 0) return false;
 
-    return sesion.ipAddress === ip && sesion.dispositivo === dispositivo;
+    const dispositivoValido = sesiones.some(
+      (s: Sesiones) => s.dispositivo === dispositivoActual,
+    );
+    if (!dispositivoValido) return false;
+
+    const prefijo = (ip: string): string => ip.split('.').slice(0, 3).join('.');
+    const prefijoActual = prefijo(ipActual);
+
+    return sesiones.some(
+      (s: Sesiones) => prefijo(s.ipAddress) === prefijoActual,
+    );
   }
 }
