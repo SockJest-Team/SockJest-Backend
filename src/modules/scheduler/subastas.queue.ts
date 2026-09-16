@@ -40,10 +40,11 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
     this.queue = new Queue(NOMBRE_COLA, {
       connection: this.redis.duplicate(),
       defaultJobOptions: {
-        removeOnComplete: 50,
-        removeOnFail: 200,
         attempts: 3,
         backoff: { type: 'exponential', delay: 5_000 },
+
+        removeOnComplete: true,
+        removeOnFail: 500,
       },
     });
 
@@ -91,21 +92,30 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
     if (!this.queue) return;
     await this.queue.add('tick', {}, {
       repeat: { every: INTERVALO_MS },
-      jobId: 'tick-subastas',
     } as Parameters<Queue['add']>[2]);
   }
 
   private async verificarRepeatJob(): Promise<void> {
-    if (!this.queue || !this.redis) return;
+    if (!this.queue) return;
     try {
-      const programados: string[] = await this.redis.zrange(
-        `${NOMBRE_COLA}:repeat`,
-        0,
-        -1,
+      const cola = this.queue as unknown as {
+        getJobSchedulers?: () => Promise<Array<{ name?: string; id?: string }>>;
+        getRepeatableJobs?: () => Promise<
+          Array<{ name?: string; id?: string }>
+        >;
+      };
+
+      let repetibles: Array<{ name?: string; id?: string }> = [];
+      if (typeof cola.getJobSchedulers === 'function') {
+        repetibles = await cola.getJobSchedulers();
+      } else if (typeof cola.getRepeatableJobs === 'function') {
+        repetibles = await cola.getRepeatableJobs();
+      }
+
+      const existe = repetibles.some(
+        (j) => j?.name === 'tick' || String(j?.id ?? '').includes('tick'),
       );
-      const existe = programados.some((entrada: string) =>
-        entrada.includes('tick'),
-      );
+
       if (!existe) {
         this.logger.warn('🩺 Repeatable job perdido — re-agendando tick');
         await this.agendarTick();
@@ -115,6 +125,7 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
       // Redis momentáneamente caído: el próximo ciclo reintenta
     }
   }
+
   private async protegido(nombre: string, fn: () => Promise<void>) {
     try {
       await fn();
