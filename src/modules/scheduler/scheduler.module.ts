@@ -8,6 +8,7 @@ import { Subastas } from '../../entities/Subastas';
 import { Pujas } from '../../entities/Pujas';
 import { Pagos } from '../../entities/Pagos';
 import { Usuarios } from '../../entities/Usuarios';
+import { SubastasQueue } from './subastas.queue';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { Usuarios } from '../../entities/Usuarios';
     AuctionModule,
     NotificationsModule,
   ],
-  providers: [SchedulerService],
+  providers: [SchedulerService, SubastasQueue],
 })
 export class SchedulerModule {}

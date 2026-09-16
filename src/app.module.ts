@@ -12,7 +12,6 @@ import { ReservasAccesoModule } from './modules/reservas-acceso/reservas-acceso.
 import { CommonModule } from './common/common.module';
 import { EntitiesModule } from './entities/entities.module';
 import { AuctionModule } from './modules/auction/auction.module';
-import { ScheduleModule } from '@nestjs/schedule';
 import { BidsModule } from './modules/bids/bids.module';
 import { CalificacionesModule } from './modules/calificaciones/calificaciones.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -20,6 +19,7 @@ import { PagosModule } from './modules/pagos/pagos.module';
 import { PujasModule } from './modules/pujas/pujas.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { SupabaseModule } from './config/supabase.module';
+import { RedisModule } from './config/redis.module';
 import { HistorialModule } from './modules/historial/historial.module';
 import { VendedoresModule } from './modules/vendedores/vendedores.module';
 import { ReservasGestionModule } from './modules/reservas-gestion/reservas.module';
@@ -28,10 +28,8 @@ import { ReportesModule } from './modules/reportes/reportes.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
+    RedisModule,
     EmailModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -50,11 +48,11 @@ import { ReportesModule } from './modules/reportes/reportes.module';
             ? { rejectUnauthorized: false }
             : false,
         extra: {
-          max: 10, // máximo de conexiones en el pool
+          max: 10,
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 5000,
         },
-        retryAttempts: 5, // reintenta si Supabase no responde al iniciar
+        retryAttempts: 5,
         retryDelay: 3000,
         autoLoadEntities: true,
       }),
@@ -70,13 +68,11 @@ import { ReportesModule } from './modules/reportes/reportes.module';
     CommonModule,
     AuctionModule,
     SchedulerModule,
-    ScheduleModule.forRoot(),
     BidsModule,
     CalificacionesModule,
     NotificationsModule,
     PujasModule,
     PagosModule,
-    SchedulerModule,
     SupabaseModule,
     HistorialModule,
     VendedoresModule,
