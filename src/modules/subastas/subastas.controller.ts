@@ -114,7 +114,11 @@ export class SubastasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('Subastador', 'Usuario', 'Admin')
   @Patch(':id')
-  update( @Param('id') id: string, @Body() dto: UpdateSubastaDto, @Req() req: AuthenticatedRequest,) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateSubastaDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.subastasService.update(id, dto, req.user.userId);
   }
 

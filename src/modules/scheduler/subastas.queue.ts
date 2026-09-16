@@ -18,6 +18,7 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SubastasQueue.name);
   private queue?: Queue;
   private worker?: Worker;
+  private intervaloSanacion?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly schedulerService: SchedulerService,
@@ -46,16 +47,13 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
       },
     });
 
-    await this.queue.add('tick', {}, {
-      repeat: { every: INTERVALO_MS },
-      jobId: 'tick-subastas',
-    } as Parameters<Queue['add']>[2]);
+    await this.agendarTick();
 
     this.worker = new Worker(
       NOMBRE_COLA,
       async (job) => {
         if (job.name !== 'tick') return;
-        this.logger.debug(`⏱ tick ${job.id} — ${new Date().toISOString()}`);
+        this.logger.log(`⏱ tick ${job.id} — ${new Date().toISOString()}`);
 
         await this.protegido('abrirSubastas', () =>
           this.schedulerService.abrirSubastasProgramadas(),
@@ -76,15 +74,47 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
 
     this.worker.on('failed', (job, err) =>
       this.logger.error(
-        ` Job ${job?.name} (intento ${job?.attemptsMade}): ${err.message}`,
+        `❌ Job ${job?.name} (intento ${job?.attemptsMade}): ${err.message}`,
       ),
     );
 
+    this.intervaloSanacion = setInterval(() => {
+      void this.verificarRepeatJob();
+    }, 60_000);
+
     this.logger.log(
-      ' BullMQ activo: tick cada 10s, concurrency=1, 3 reintentos',
+      '✅ BullMQ activo: tick cada 10s, concurrency=1, 3 reintentos (+auto-sanación)',
     );
   }
 
+  private async agendarTick(): Promise<void> {
+    if (!this.queue) return;
+    await this.queue.add('tick', {}, {
+      repeat: { every: INTERVALO_MS },
+      jobId: 'tick-subastas',
+    } as Parameters<Queue['add']>[2]);
+  }
+
+  private async verificarRepeatJob(): Promise<void> {
+    if (!this.queue || !this.redis) return;
+    try {
+      const programados: string[] = await this.redis.zrange(
+        `${NOMBRE_COLA}:repeat`,
+        0,
+        -1,
+      );
+      const existe = programados.some((entrada: string) =>
+        entrada.includes('tick'),
+      );
+      if (!existe) {
+        this.logger.warn('🩺 Repeatable job perdido — re-agendando tick');
+        await this.agendarTick();
+        this.logger.log('✅ Tick re-agendado (auto-sanación)');
+      }
+    } catch {
+      // Redis momentáneamente caído: el próximo ciclo reintenta
+    }
+  }
   private async protegido(nombre: string, fn: () => Promise<void>) {
     try {
       await fn();
@@ -96,13 +126,14 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
         );
       this.logger.error(
         esRed
-          ? ` [QUEUE] REDIS/BD INALCANZABLE en ${nombre}: ${msg} (reintentará)`
-          : ` [QUEUE] BUG en ${nombre}: ${e instanceof Error ? e.stack : msg}`,
+          ? `❌ [QUEUE] REDIS/BD INALCANZABLE en ${nombre}: ${msg} (reintentará)`
+          : `❌ [QUEUE] BUG en ${nombre}: ${e instanceof Error ? e.stack : msg}`,
       );
     }
   }
 
   async onModuleDestroy(): Promise<void> {
+    if (this.intervaloSanacion) clearInterval(this.intervaloSanacion);
     await this.worker?.close();
     await this.queue?.close();
   }
