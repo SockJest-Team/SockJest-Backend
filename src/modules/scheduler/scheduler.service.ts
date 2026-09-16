@@ -71,6 +71,41 @@ export class SchedulerService {
 
       this.logger.log(`Subasta ${subasta.idSubasta} activada (programada)`);
     }
+
+    const zombis = await this.subastasRepo.find({
+      where: {
+        estado: 'Aprobada',
+        fechaFin: LessThanOrEqual(ahora),
+      },
+      relations: ['idSubastador'],
+    });
+
+    for (const zombi of zombis) {
+      await this.subastasRepo.update(
+        { idSubasta: zombi.idSubasta },
+        { estado: 'Finalizada' },
+      );
+      await this.registrarHistorial(
+        zombi.idSubasta,
+        'Aprobada',
+        'Finalizada',
+        zombi.idSubastador?.idUsuario,
+      );
+
+      const subastadorId = zombi.idSubastador?.idUsuario;
+      if (subastadorId) {
+        void this.notificationsGateway.notificarUsuario(subastadorId, {
+          tipo: 'RENOVACION',
+          titulo: 'Subasta expirada sin abrirse',
+          mensaje: `«${zombi.titulo}» llegó a su fecha de fin sin haberse activado. Edítala y reenvíala a revisión.`,
+          idSubasta: zombi.idSubasta,
+        });
+      }
+
+      this.logger.log(
+        `Subasta ${zombi.idSubasta} finalizada (rescate: nunca activó)`,
+      );
+    }
   }
 
   async cerrarSubastasVencidas(): Promise<void> {
