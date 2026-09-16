@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { DataSource, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { Subastas } from '../../entities/Subastas';
 import { Pujas } from '../../entities/Pujas';
@@ -33,42 +32,6 @@ export class SchedulerService {
     private readonly emailService: EmailService,
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
-
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async gestionarEstadosSubastas(): Promise<void> {
-    if (process.env.SCHEDULER_ENABLED === 'false') return;
-
-    if (
-      process.env.SCHEDULER_MODE !== 'cron' &&
-      process.env.REDIS_URL /* || REDIS_HOST */
-    ) {
-      return;
-    }
-
-    await this.protegido('abrirSubastas', () =>
-      this.abrirSubastasProgramadas(),
-    );
-    await this.protegido('cerrarSubastas', () => this.cerrarSubastasVencidas());
-    await this.protegido('pagosVencidos', () => this.gestionarPagosVencidos());
-  }
-
-  private async protegido(
-    nombre: string,
-    fn: () => Promise<void>,
-  ): Promise<void> {
-    try {
-      await fn();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const esRed =
-        /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|Connection terminated/i.test(msg);
-      this.logger.error(
-        esRed
-          ? `❌ [SCHEDULER] BD INALCANZABLE en ${nombre}: ${msg} (reintentará en 10s)`
-          : `❌ [SCHEDULER] BUG en ${nombre}: ${e instanceof Error ? e.stack : String(e)}`,
-      );
-    }
-  }
 
   async abrirSubastasProgramadas(): Promise<void> {
     const ahora = new Date();

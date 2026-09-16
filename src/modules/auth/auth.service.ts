@@ -64,7 +64,6 @@ export class AuthService {
         'No pudimos crear tu cuenta. Intenta de nuevo.',
       );
     }
-
     const authUserId = authData.user.id;
 
     try {
