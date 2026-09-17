@@ -25,7 +25,7 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
     @Inject(REDIS_CLIENT) private readonly redis: Redis | null,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  onModuleInit(): void {
     if (process.env.SCHEDULER_ENABLED === 'false') {
       this.logger.log(
         '⏸ Scheduler desactivado en esta instancia (SCHEDULER_ENABLED=false)',
