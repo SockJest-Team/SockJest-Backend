@@ -11,21 +11,21 @@ import { SchedulerService } from './scheduler.service';
 import { REDIS_CLIENT } from '../../config/redis.provider';
 
 const NOMBRE_COLA = 'subastas';
-const INTERVALO_MS = 5_000;
+const INTERVALO_MS = 10_000;
 
 @Injectable()
 export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SubastasQueue.name);
   private queue?: Queue;
   private worker?: Worker;
-  private intervaloSanacion?: ReturnType<typeof setInterval>;
+  private programador?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly schedulerService: SchedulerService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis | null,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  onModuleInit(): void {
     if (process.env.SCHEDULER_ENABLED === 'false') {
       this.logger.log(
         '⏸ Scheduler desactivado en esta instancia (SCHEDULER_ENABLED=false)',
@@ -42,19 +42,19 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: 'exponential', delay: 5_000 },
-
         removeOnComplete: true,
         removeOnFail: 500,
       },
     });
 
-    await this.agendarTick();
+    this.programador = setInterval(() => {
+      void this.encolarTick();
+    }, INTERVALO_MS);
 
     this.worker = new Worker(
       NOMBRE_COLA,
       async (job) => {
         if (job.name !== 'tick') return;
-        this.logger.log(`⏱ tick ${job.id} — ${new Date().toISOString()}`);
 
         await this.protegido('abrirSubastas', () =>
           this.schedulerService.abrirSubastasProgramadas(),
@@ -79,50 +79,21 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
       ),
     );
 
-    this.intervaloSanacion = setInterval(() => {
-      void this.verificarRepeatJob();
-    }, 60_000);
-
     this.logger.log(
-      '✅ BullMQ activo: tick cada 10s, concurrency=1, 3 reintentos (+auto-sanación)',
+      `✅ BullMQ activo: tick cada ${INTERVALO_MS / 1000}s (setInterval), concurrency=1, 3 reintentos`,
     );
   }
 
-  private async agendarTick(): Promise<void> {
-    if (!this.queue) return;
-    await this.queue.add('tick', {}, {
-      repeat: { every: INTERVALO_MS },
-    } as Parameters<Queue['add']>[2]);
-  }
-
-  private async verificarRepeatJob(): Promise<void> {
+  private async encolarTick(): Promise<void> {
     if (!this.queue) return;
     try {
-      const cola = this.queue as unknown as {
-        getJobSchedulers?: () => Promise<Array<{ name?: string; id?: string }>>;
-        getRepeatableJobs?: () => Promise<
-          Array<{ name?: string; id?: string }>
-        >;
-      };
-
-      let repetibles: Array<{ name?: string; id?: string }> = [];
-      if (typeof cola.getJobSchedulers === 'function') {
-        repetibles = await cola.getJobSchedulers();
-      } else if (typeof cola.getRepeatableJobs === 'function') {
-        repetibles = await cola.getRepeatableJobs();
-      }
-
-      const existe = repetibles.some(
-        (j) => j?.name === 'tick' || String(j?.id ?? '').includes('tick'),
+      await this.queue.add(
+        'tick',
+        { ts: Date.now() },
+        { jobId: `tick-${Date.now()}` },
       );
-
-      if (!existe) {
-        this.logger.warn('🩺 Repeatable job perdido — re-agendando tick');
-        await this.agendarTick();
-        this.logger.log('✅ Tick re-agendado (auto-sanación)');
-      }
     } catch {
-      // Redis momentáneamente caído: el próximo ciclo reintenta
+      // Redis momentáneamente caído: el próximo intervalo reintenta
     }
   }
 
@@ -144,7 +115,7 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.intervaloSanacion) clearInterval(this.intervaloSanacion);
+    if (this.programador) clearInterval(this.programador);
     await this.worker?.close();
     await this.queue?.close();
   }
