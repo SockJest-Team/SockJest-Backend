@@ -9,7 +9,7 @@ import { ErrorCodes } from '../../common/constants/error-codes';
 import { enmascararCorreo } from '../../common/utils/mask.util';
 import { SalaStateService } from '../../common/services/sala-state.service';
 import { UserRolesService } from '../../common/user-roles.service';
-
+import { limpiarIp } from '../../common/utils/ip.util';
 export const VENTANA_CRITICA_MS = 30_000;
 export const EXTENSION_MS = 30_000;
 
@@ -277,12 +277,14 @@ export class PujasService {
         }
       }
 
+      limpiarIp(meta.ip);
+
       const nuevaPuja = pujasRepo.create({
         idSubasta: subastaId,
         idUsuario: usuario.userId,
         monto: redondear(monto).toFixed(2),
         timestampMs: String(ahora),
-        ipAddress: meta.ip || '0.0.0.0', // inet no acepta vacío
+        ipAddress: meta.ip || '0.0.0.0',
         dispositivo: (meta.dispositivo || 'Desconocido').slice(0, 255),
         estado: 'Ganadora',
         fechaRegistro: new Date(),
