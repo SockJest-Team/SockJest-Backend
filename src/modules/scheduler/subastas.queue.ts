@@ -75,12 +75,12 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
 
     this.worker.on('failed', (job, err) =>
       this.logger.error(
-        `❌ Job ${job?.name} (intento ${job?.attemptsMade}): ${err.message}`,
+        ` Job ${job?.name} (intento ${job?.attemptsMade}): ${err.message}`,
       ),
     );
 
     this.logger.log(
-      `✅ BullMQ activo: tick cada ${INTERVALO_MS / 1000}s (setInterval), concurrency=1, 3 reintentos`,
+      ` BullMQ activo: tick cada ${INTERVALO_MS / 1000}s (setInterval), concurrency=1, 3 reintentos`,
     );
   }
 
@@ -108,8 +108,8 @@ export class SubastasQueue implements OnModuleInit, OnModuleDestroy {
         );
       this.logger.error(
         esRed
-          ? `❌ [QUEUE] REDIS/BD INALCANZABLE en ${nombre}: ${msg} (reintentará)`
-          : `❌ [QUEUE] BUG en ${nombre}: ${e instanceof Error ? e.stack : msg}`,
+          ? ` [QUEUE] REDIS/BD INALCANZABLE en ${nombre}: ${msg} (reintentará)`
+          : ` [QUEUE] BUG en ${nombre}: ${e instanceof Error ? e.stack : msg}`,
       );
     }
   }
