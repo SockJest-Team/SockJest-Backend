@@ -123,6 +123,17 @@ export class AuthService {
     }
 
     const idUsuario = data.user.id;
+
+    const usuario = await this.usuariosRepo.findOneBy({ idUsuario });
+    if (!usuario || usuario.estado !== 'Activo') {
+      await this.supabase.auth.admin.signOut(data.session.access_token);
+      throw apiError(
+        HttpStatus.FORBIDDEN,
+        'CUENTA_BLOQUEADA',
+        'Tu cuenta está bloqueada o inactiva. Contacta al administrador.',
+      );
+    }
+
     const ip = limpiarIp(
       (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
         req.socket.remoteAddress,
@@ -197,5 +208,31 @@ export class AuthService {
         roles,
       },
     };
+  }
+
+  async logout(userId: string, accessToken?: string): Promise<void> {
+    await this.sesionesRepo.update(
+      { idUsuario: userId, activa: true },
+      { activa: false },
+    );
+
+    if (accessToken) {
+      try {
+        const { error } = await this.supabase.auth.admin.signOut(
+          accessToken,
+          'global',
+        );
+        if (error) {
+          this.logger.warn(
+            `No se pudo revocar el token en Supabase: ${error.message}`,
+          );
+        }
+      } catch (e) {
+        this.logger.warn(
+          'Error al revocar token en Supabase:',
+          e instanceof Error ? e.message : e,
+        );
+      }
+    }
   }
 }
