@@ -28,6 +28,7 @@ import { FiltroSubastasDto } from './dto/filtro-subastas.dto';
 import { apiError } from '../../common/utils/api-error';
 import { ErrorCodes } from '../../common/constants/error-codes';
 import { MAX_IMAGEN_BYTES } from './constants/imagenes.constants';
+import { SuspenderSubastaDto } from './dto/suspender-subasta.dto';
 
 @Controller('subastas')
 export class SubastasController {
@@ -145,5 +146,58 @@ export class SubastasController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.subastasService.rechazarSubasta(id, motivo, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
+  @Patch(':id/suspender')
+  async suspenderSubasta(
+    @Param('id') id: string,
+    @Body() dto: SuspenderSubastaDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.subastasService.suspenderSubasta(
+      id,
+      dto.motivo,
+      req.user.userId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
+  @Patch(':id/reactivar')
+  async reactivarSubasta(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.subastasService.reactivarSubasta(id, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/reportar')
+  async reportarSubasta(
+    @Param('id') id: string,
+    @Body() dto: { motivo: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.subastasService.reportarSubasta(
+      id,
+      dto.motivo,
+      req.user.userId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('moderacion/estadisticas')
+  async getEstadisticasModeracion() {
+    return this.subastasService.getEstadisticasModeracion();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('moderacion/reportadas')
+  async getSubastasReportadas() {
+    return this.subastasService.getSubastasReportadas();
   }
 }
