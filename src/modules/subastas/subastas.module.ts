@@ -4,6 +4,8 @@ import { SubastasService } from './subastas.service';
 import { SubastasController } from './subastas.controller';
 import { Subastas } from '../../entities/Subastas';
 import { SubastaImagenes } from '../../entities/SubastaImagenes';
+import { Categorias } from '../../entities/Categorias';
+import { ReservasAcceso } from '../../entities/ReservasAcceso';
 import { SubastaHistorialEstados } from '../../entities/SubastaHistorialEstados';
 import { Notificaciones } from '../../entities/Notificaciones';
 import { ReportesSubasta } from '../../entities/ReportesSubasta';
@@ -14,6 +16,8 @@ import { CommonModule } from '../../common/common.module';
     TypeOrmModule.forFeature([
       Subastas,
       SubastaImagenes,
+      Categorias,
+      ReservasAcceso,
       SubastaHistorialEstados,
       Notificaciones,
       ReportesSubasta,
