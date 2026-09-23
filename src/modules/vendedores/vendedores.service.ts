@@ -5,7 +5,6 @@ import { Usuarios } from '../../entities/Usuarios';
 import { Subastas } from '../../entities/Subastas';
 import { Calificaciones } from '../../entities/Calificaciones';
 import { apiError } from '../../common/utils/api-error';
-import { ErrorCodes } from '../../common/constants/error-codes';
 import { enmascararCorreo } from '../../common/utils/mask.util';
 
 @Injectable()
@@ -19,30 +18,43 @@ export class VendedoresService {
     private readonly calificacionesRepo: Repository<Calificaciones>,
   ) {}
 
-  async listar(buscar?: string) {
+  async listar(buscar?: string, page = 1, limit = 12) {
+    const offset = (page - 1) * limit;
+
     const qb = this.usuariosRepo
       .createQueryBuilder('u')
       .innerJoin('u.usuarioRoles', 'ur')
       .innerJoin('ur.idRol2', 'rol')
+      .innerJoin('u.subastas3', 'subasta')
       .where('rol.nombreRol IN (:...roles)', {
         roles: ['Subastador', 'Usuario', 'Admin'],
       })
+      .andWhere('u.estado = :estado', { estado: 'Activo' })
       .distinct(true);
 
     if (buscar?.trim()) {
       qb.andWhere('u.nombreCompleto ILIKE :q', { q: `%${buscar.trim()}%` });
     }
 
-    const vendedores = await qb.getMany();
+    qb.skip(offset).take(limit);
+
+    const [vendedores, total] = await qb.getManyAndCount();
+
     const reputaciones = await this.mapaReputaciones(
       vendedores.map((v) => v.idUsuario),
     );
 
-    return vendedores.map((v) => ({
-      id: v.idUsuario,
-      nombre: v.nombreCompleto,
-      reputacion: reputaciones.get(v.idUsuario) ?? { promedio: 0, total: 0 },
-    }));
+    return {
+      items: vendedores.map((v) => ({
+        id: v.idUsuario,
+        nombre: v.nombreCompleto,
+        reputacion: reputaciones.get(v.idUsuario) ?? { promedio: 0, total: 0 },
+      })),
+      total,
+      page,
+      pageSize: limit,
+      hasMore: offset + limit < total,
+    };
   }
 
   async perfil(idVendedor: string) {
