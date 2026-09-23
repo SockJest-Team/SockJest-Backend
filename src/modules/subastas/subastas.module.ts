@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubastasService } from './subastas.service';
 import { SubastasController } from './subastas.controller';
+import { ImagenesService } from './imagenes.service'; // ← FALTABA
 import { Subastas } from '../../entities/Subastas';
 import { SubastaImagenes } from '../../entities/SubastaImagenes';
 import { Categorias } from '../../entities/Categorias';
@@ -27,7 +28,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [SubastasController],
-  providers: [SubastasService],
+  providers: [SubastasService, ImagenesService],
   exports: [SubastasService],
 })
 export class SubastasModule {}
