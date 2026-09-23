@@ -10,6 +10,7 @@ import { SubastaHistorialEstados } from '../../entities/SubastaHistorialEstados'
 import { Notificaciones } from '../../entities/Notificaciones';
 import { ReportesSubasta } from '../../entities/ReportesSubasta';
 import { CommonModule } from '../../common/common.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CommonModule } from '../../common/common.module';
       ReportesSubasta,
     ]),
     CommonModule,
+    NotificationsModule,
   ],
   controllers: [SubastasController],
   providers: [SubastasService],
