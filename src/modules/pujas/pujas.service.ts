@@ -236,13 +236,16 @@ export class PujasService {
         }
       }
 
-      const pujasRepo = queryRunner.manager.getRepository(Pujas);
+            const pujasRepo = queryRunner.manager.getRepository(Pujas);
       const totalPujas = await pujasRepo.count({
         where: { idSubasta: subastaId },
       });
-      const pujaVigente = await pujasRepo.findOne({
-        where: { idSubasta: subastaId, estado: 'Ganadora' },
-      });
+      const pujaVigente = await pujasRepo
+        .createQueryBuilder('p')
+        .setLock('pessimistic_write')
+        .where('p.idSubasta = :id', { id: subastaId })
+        .andWhere('p.estado = :e', { e: 'Ganadora' })
+        .getOne();
 
       const precioBase = Number(subasta.precioBase);
       const pct = Number(subasta.incrementoMinimoPct);
