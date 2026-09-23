@@ -1,4 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Subastas } from '../../entities/Subastas';
@@ -7,6 +12,7 @@ import { Categorias } from '../../entities/Categorias';
 import { ReservasAcceso } from '../../entities/ReservasAcceso';
 import { Notificaciones } from '../../entities/Notificaciones';
 import { SubastaHistorialEstados } from '../../entities/SubastaHistorialEstados';
+import { ReportesSubasta } from '../../entities/ReportesSubasta';
 import { CreateSubastaDto } from './dto/create-subasta.dto';
 import { UpdateSubastaDto } from './dto/update-subasta.dto';
 import { FiltroSubastasDto } from './dto/filtro-subastas.dto';
@@ -43,6 +49,12 @@ export class SubastasService {
     private readonly categoriasRepo: Repository<Categorias>,
     @InjectRepository(ReservasAcceso)
     private readonly reservasRepo: Repository<ReservasAcceso>,
+    @InjectRepository(SubastaHistorialEstados)
+    private readonly historialRepo: Repository<SubastaHistorialEstados>,
+    @InjectRepository(Notificaciones)
+    private readonly notificacionesRepo: Repository<Notificaciones>,
+    @InjectRepository(ReportesSubasta)
+    private readonly reportesRepo: Repository<ReportesSubasta>,
     private readonly moderationService: ImageModerationService,
     private readonly userRolesService: UserRolesService,
     private readonly notificationsGateway: NotificationsGateway,
@@ -666,5 +678,148 @@ export class SubastasService {
       },
       esGanador: Boolean(userId && s.idGanador?.idUsuario === userId),
     };
+  }
+
+  async suspenderSubasta(idSubasta: string, motivo: string, idAdmin: string) {
+    const subasta = await this.repo.findOne({
+      where: { idSubasta },
+      relations: ['idSubastador'],
+    });
+    if (!subasta) throw new NotFoundException('Subasta no encontrada');
+
+    await this.historialRepo.save(
+      this.historialRepo.create({
+        estadoAnterior: subasta.estado,
+        estadoNuevo: 'Suspendida',
+        idSubasta: { idSubasta } as SubastaHistorialEstados['idSubasta'],
+        idUsuarioResponsable: {
+          idUsuario: idAdmin,
+        } as SubastaHistorialEstados['idUsuarioResponsable'],
+      }),
+    );
+
+    await this.repo.update(idSubasta, { estado: 'Suspendida' });
+
+    await this.notificacionesRepo.save(
+      this.notificacionesRepo.create({
+        idUsuario: subasta.idSubastador.idUsuario,
+        idUsuario2: {
+          idUsuario: subasta.idSubastador.idUsuario,
+        } as Notificaciones['idUsuario2'],
+        idSubasta: { idSubasta } as Notificaciones['idSubasta'],
+        tipo: 'RECHAZO',
+        mensaje: `Tu subasta "${subasta.titulo}" fue suspendida. Motivo: ${motivo}`,
+        canal: 'WebSocket',
+      }),
+    );
+
+    return { ok: true, mensaje: 'Subasta suspendida' };
+  }
+
+  async reactivarSubasta(idSubasta: string, idAdmin: string) {
+    const subasta = await this.repo.findOne({
+      where: { idSubasta },
+      relations: ['idSubastador'],
+    });
+    if (!subasta) throw new NotFoundException('Subasta no encontrada');
+    if (subasta.estado !== 'Suspendida') {
+      throw new BadRequestException('La subasta no está suspendida');
+    }
+
+    await this.historialRepo.save(
+      this.historialRepo.create({
+        estadoAnterior: 'Suspendida',
+        estadoNuevo: 'Activa',
+        idSubasta: { idSubasta } as SubastaHistorialEstados['idSubasta'],
+        idUsuarioResponsable: {
+          idUsuario: idAdmin,
+        } as SubastaHistorialEstados['idUsuarioResponsable'],
+      }),
+    );
+
+    await this.repo.update(idSubasta, { estado: 'Activa' });
+
+    await this.notificacionesRepo.save(
+      this.notificacionesRepo.create({
+        idUsuario: subasta.idSubastador.idUsuario,
+        idUsuario2: {
+          idUsuario: subasta.idSubastador.idUsuario,
+        } as Notificaciones['idUsuario2'],
+        idSubasta: { idSubasta } as Notificaciones['idSubasta'],
+        tipo: 'APROBACION',
+        mensaje: `Tu subasta "${subasta.titulo}" fue reactivada.`,
+        canal: 'WebSocket',
+      }),
+    );
+
+    return { ok: true, mensaje: 'Subasta reactivada' };
+  }
+
+  async reportarSubasta(
+    idSubasta: string,
+    motivo: string,
+    idReportador: string,
+  ) {
+    const subasta = await this.repo.findOneBy({ idSubasta });
+    if (!subasta) throw new NotFoundException('Subasta no encontrada');
+
+    const existente = await this.reportesRepo.findOne({
+      where: { idSubasta, idReportador },
+    });
+    if (existente) throw new ConflictException('Ya reportaste esta subasta');
+
+    return this.reportesRepo.save(
+      this.reportesRepo.create({
+        idSubasta,
+        idReportador,
+        motivo,
+        estado: 'Pendiente',
+      }),
+    );
+  }
+
+  async getEstadisticasModeracion() {
+    const [
+      aprobadas,
+      rechazadas,
+      pendientes,
+      suspendidas,
+      activas,
+      finalizadas,
+      reportesPendientes,
+    ] = await Promise.all([
+      this.repo.count({ where: { estado: 'Aprobada' } }),
+      this.repo.count({ where: { estado: 'Rechazada' } }),
+      this.repo.count({ where: { estado: 'Pendiente' } }),
+      this.repo.count({ where: { estado: 'Suspendida' } }),
+      this.repo.count({ where: { estado: 'Activa' } }),
+      this.repo.count({ where: { estado: 'Finalizada' } }),
+      this.reportesRepo.count({ where: { estado: 'Pendiente' } }),
+    ]);
+
+    return {
+      aprobadas,
+      rechazadas,
+      pendientes,
+      suspendidas,
+      activas,
+      finalizadas,
+      reportesPendientes,
+      total:
+        aprobadas +
+        rechazadas +
+        pendientes +
+        suspendidas +
+        activas +
+        finalizadas,
+    };
+  }
+
+  async getSubastasReportadas() {
+    return this.reportesRepo.find({
+      where: { estado: 'Pendiente' },
+      relations: ['idSubasta2', 'idReportador2'],
+      order: { fechaCreacion: 'DESC' },
+    });
   }
 }
