@@ -236,7 +236,7 @@ export class PujasService {
         }
       }
 
-            const pujasRepo = queryRunner.manager.getRepository(Pujas);
+      const pujasRepo = queryRunner.manager.getRepository(Pujas);
       const totalPujas = await pujasRepo.count({
         where: { idSubasta: subastaId },
       });
@@ -280,14 +280,14 @@ export class PujasService {
         }
       }
 
-      limpiarIp(meta.ip);
+      const ipLimpia = limpiarIp(meta.ip);
 
       const nuevaPuja = pujasRepo.create({
         idSubasta: subastaId,
         idUsuario: usuario.userId,
         monto: redondear(monto).toFixed(2),
         timestampMs: String(ahora),
-        ipAddress: meta.ip || '0.0.0.0',
+        ipAddress: ipLimpia,
         dispositivo: (meta.dispositivo || 'Desconocido').slice(0, 255),
         estado: 'Ganadora',
         fechaRegistro: new Date(),
