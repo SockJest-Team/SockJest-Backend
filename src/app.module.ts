@@ -25,6 +25,7 @@ import { VendedoresModule } from './modules/vendedores/vendedores.module';
 import { ReservasGestionModule } from './modules/reservas-gestion/reservas.module';
 import { BandejaModule } from './modules/bandeja/bandeja.module';
 import { ReportesModule } from './modules/reportes/reportes.module';
+import { ApelacionesModule } from './modules/apelaciones/apelaciones.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ReportesModule } from './modules/reportes/reportes.module';
     ReservasGestionModule,
     BandejaModule,
     ReportesModule,
+    ApelacionesModule,
   ],
 })
 export class AppModule {}
