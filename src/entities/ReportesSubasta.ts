@@ -15,7 +15,7 @@ export class ReportesSubasta {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_reporte' })
   idReporte: string;
 
-  @Column('uuid', { name: 'id_subasta' })
+  @Column('bigint', { name: 'id_subasta' })
   idSubasta: string;
 
   @Column('uuid', { name: 'id_reportador' })
