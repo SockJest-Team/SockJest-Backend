@@ -1,7 +1,14 @@
-import { IsEmail, IsString, MinLength, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  MinLength,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsString()
+  @MinLength(2)
   nombre_completo: string;
 
   @IsEmail()
@@ -14,6 +21,7 @@ export class RegisterDto {
   @IsString()
   telefono: string;
 
-  @IsIn(['Comprador', 'Subastador', 'Usuario'])
-  rol: string;
+  @IsOptional()
+  @IsEnum(['Comprador', 'Subastador', 'Usuario'])
+  rol?: string;
 }
