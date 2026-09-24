@@ -76,7 +76,9 @@ export class AuthService {
       });
       await this.usuariosRepo.save(nuevoUsuario);
 
-      const rol = await this.rolesRepo.findOneBy({ nombreRol: dto.rol });
+      const rol = await this.rolesRepo.findOneBy({
+        nombreRol: dto.rol ?? 'Comprador',
+      });
       if (!rol) {
         throw apiError(
           HttpStatus.INTERNAL_SERVER_ERROR,
